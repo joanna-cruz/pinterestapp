@@ -1,98 +1,172 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Image, Dimensions, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Stack } from 'expo-router'; 
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+const minhasFotos = [
+  { id: '1', source: require('../../assets/images/foto1.jpg.jpg') }, 
+  { id: '2', source: require('../../assets/images/foto2.jpg.jpg') }, 
+  { id: '3', source: require('../../assets/images/foto3.jpg.jpeg') },
+  { id: '4', source: require('../../assets/images/foto4.jpg') },
+];
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+const largTela = Dimensions.get('window').width;
+const largMax = largTela > 500 ? 420 : largTela; 
+const largCol = (largMax - 48) / 2; 
 
 export default function HomeScreen() {
+  const [curtidas, setCurtidas] = useState<string[]>([]);
+
+  const alternarCurtida = (id: string) => {
+    setCurtidas((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const colunaEsquerda = minhasFotos.filter((_, index) => index % 2 === 0);
+  const colunaDireita = minhasFotos.filter((_, index) => index % 2 !== 0);
+
+  const renderCardFoto = (item: { id: string; source: any }) => {
+    const isLiked = curtidas.includes(item.id);
+
+    return (
+      <View key={item.id} style={styles.cardFoto}>
+        <Image source={item.source} style={styles.imagem} resizeMode="cover" />
+        
+        <TouchableOpacity 
+          style={styles.botaoCurtir} 
+          onPress={() => alternarCurtida(item.id)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.textoCoracao}>
+            {isLiked ? '❤️' : '🤍'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <SafeAreaView edges={['top']} style={styles.headerPinterest}>
+        <View style={styles.linhaTopo}>
+          <Text style={styles.logoPinterest}>Pinterest</Text>
+          <View style={styles.iconesDireita}>
+            <Text style={styles.textoBotaoTopo}>+</Text>
+          </View>
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.abasPesquisa}>
+          <Text style={[styles.textoAba, styles.abaAtiva]}>Tudo</Text>
+          <Text style={styles.textoAba}>favoritas</Text>
+          <Text style={styles.textoAba}>inspofotos</Text>
+        </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.muralPinterest}>
+          <View style={styles.coluna}>
+            {colunaEsquerda.map(renderCardFoto)}
+          </View>
+          <View style={styles.coluna}>
+            {colunaDireita.map(renderCardFoto)}
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#000000', 
+    alignItems: 'center',
+  },
+  headerPinterest: {
+    width: '100%',
+    maxWidth: largMax,
+    backgroundColor: '#000000',
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  linhaTopo: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    marginVertical: 10,
   },
-  heroSection: {
+  logoPinterest: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  iconesDireita: {
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'center',
+  },
+  textoBotaoTopo: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  abasPesquisa: {
+    flexDirection: 'row',
+    marginTop: 5,
+  },
+  textoAba: {
+    color: '#A1A3A7',
+    fontSize: 15,
+    fontWeight: '600',
+    marginRight: 20,
+    paddingBottom: 6,
+  },
+  abaAtiva: {
+    color: '#FFFFFF',
+    borderBottomWidth: 3,
+    borderBottomColor: '#FFFFFF', 
+  },
+  scrollContent: {
+    width: largMax,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 40, 
+  },
+  muralPinterest: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  coluna: {
+    width: largCol,
+  },
+  cardFoto: {
+    width: largCol,
+    height: largCol, 
+    backgroundColor: '#1A1A1A', 
+    borderRadius: 16, 
+    overflow: 'hidden',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  imagem: {
+    width: '100%',
+    height: '100%',
+  },
+  botaoCurtir: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  textoCoracao: {
+    fontSize: 16,
   },
 });
