@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
-import { StyleSheet, Image, Dimensions, View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { Link, router, Stack } from 'expo-router';
+import { useState } from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router'; 
-
-const minhasFotos = [
-  { id: '1', source: require('../../assets/images/foto1.jpg.jpg') }, 
-  { id: '2', source: require('../../assets/images/foto2.jpg.jpg') }, 
-  { id: '3', source: require('../../assets/images/foto3.jpg.jpeg') },
-  { id: '4', source: require('../../assets/images/foto4.jpg') },
-];
+import { minhasFotos } from '../../data/fotos';
 
 const largTela = Dimensions.get('window').width;
-const largMax = largTela > 500 ? 420 : largTela; 
-const largCol = (largMax - 48) / 2; 
+const largMax = largTela > 500 ? 420 : largTela;
+const largCol = (largMax - 48) / 2;
 
 export default function HomeScreen() {
   const [curtidas, setCurtidas] = useState<string[]>([]);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   const alternarCurtida = (id: string) => {
+    const jaCurtida = curtidas.includes(id);
+
     setCurtidas((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      jaCurtida ? prev.filter((item) => item !== id) : [...prev, id]
     );
+
+    // Ao curtir (e não ao descurtir), abre a tela de detalhes da foto
+    if (!jaCurtida) {
+      router.push({ pathname: '/detalhes', params: { id } });
+    }
   };
 
   const colunaEsquerda = minhasFotos.filter((_, index) => index % 2 === 0);
@@ -32,9 +34,9 @@ export default function HomeScreen() {
     return (
       <View key={item.id} style={styles.cardFoto}>
         <Image source={item.source} style={styles.imagem} resizeMode="cover" />
-        
-        <TouchableOpacity 
-          style={styles.botaoCurtir} 
+
+        <TouchableOpacity
+          style={styles.botaoCurtir}
           onPress={() => alternarCurtida(item.id)}
           activeOpacity={0.7}
         >
@@ -52,6 +54,9 @@ export default function HomeScreen() {
 
       <SafeAreaView edges={['top']} style={styles.headerPinterest}>
         <View style={styles.linhaTopo}>
+          <TouchableOpacity onPress={() => setMenuAberto(!menuAberto)}>
+            <Text style={styles.textoBotaoTopo}>☰</Text>
+          </TouchableOpacity>
           <Text style={styles.logoPinterest}>Pinterest</Text>
           <View style={styles.iconesDireita}>
             <Text style={styles.textoBotaoTopo}>+</Text>
@@ -64,6 +69,21 @@ export default function HomeScreen() {
           <Text style={styles.textoAba}>inspofotos</Text>
         </ScrollView>
       </SafeAreaView>
+
+      {menuAberto && (
+        <View style={styles.menu}>
+          <Link href="/" style={styles.itemMenu} onPress={() => setMenuAberto(false)}>
+            Início
+          </Link>
+          <Link
+            href={{ pathname: '/detalhes', params: { id: '1' } }}
+            style={styles.itemMenu}
+            onPress={() => setMenuAberto(false)}
+          >
+            Ver detalhes
+          </Link>
+        </View>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.muralPinterest}>
@@ -82,7 +102,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000', 
+    backgroundColor: '#000000',
     alignItems: 'center',
   },
   headerPinterest: {
@@ -113,6 +133,23 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
   },
+  menu: {
+    position: 'absolute',
+    top: 90,
+    left: 16,
+    zIndex: 10,
+    elevation: 10,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    paddingVertical: 8,
+    minWidth: 160,
+  },
+  itemMenu: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
   abasPesquisa: {
     flexDirection: 'row',
     marginTop: 5,
@@ -127,13 +164,13 @@ const styles = StyleSheet.create({
   abaAtiva: {
     color: '#FFFFFF',
     borderBottomWidth: 3,
-    borderBottomColor: '#FFFFFF', 
+    borderBottomColor: '#FFFFFF',
   },
   scrollContent: {
     width: largMax,
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 40, 
+    paddingBottom: 40,
   },
   muralPinterest: {
     flexDirection: 'row',
@@ -144,9 +181,9 @@ const styles = StyleSheet.create({
   },
   cardFoto: {
     width: largCol,
-    height: largCol, 
-    backgroundColor: '#1A1A1A', 
-    borderRadius: 16, 
+    height: largCol,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 16,
     position: 'relative',
