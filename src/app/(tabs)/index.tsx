@@ -19,7 +19,6 @@ export default function HomeScreen() {
       jaCurtida ? prev.filter((item) => item !== id) : [...prev, id]
     );
 
-    // Ao curtir (e não ao descurtir), abre a tela de detalhes da foto
     if (!jaCurtida) {
       router.push({ pathname: '/detalhes', params: { id } });
     }
@@ -82,6 +81,9 @@ export default function HomeScreen() {
           >
             Ver detalhes
           </Link>
+          <Link href="/explore" style={styles.itemMenu} onPress={() => setMenuAberto(false)}>
+   Perto de você
+</Link>
         </View>
       )}
 
@@ -133,16 +135,16 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
   },
-  menu: {
-    position: 'absolute',
-    top: 90,
-    left: 16,
-    zIndex: 10,
-    elevation: 10,
-    backgroundColor: '#1A1A1A',
-    borderRadius: 12,
-    paddingVertical: 8,
-    minWidth: 160,
+ menu: {
+  position: 'absolute',
+  top: 90,
+  left: (largTela - largMax) / 2 + 16,
+  zIndex: 10,
+  elevation: 10,
+  backgroundColor: '#1A1A1A',
+  borderRadius: 12,
+  paddingVertical: 8,
+  minWidth: 160,
   },
   itemMenu: {
     color: '#FFFFFF',
